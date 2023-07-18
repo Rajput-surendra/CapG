@@ -2,12 +2,14 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../Helper/Color.dart';
 import '../../widgets/appBar.dart';
 import '../Language/languageSettings.dart';
-
+var scannedtext = '';
+var q;
 class ShoosDetailsScreen extends StatefulWidget {
   const ShoosDetailsScreen({Key? key}) : super(key: key);
 
@@ -22,68 +24,73 @@ class _ShoosDetailsScreenState extends State<ShoosDetailsScreen> {
       child: Scaffold(
         backgroundColor: colors.whiteTemp,
 
-        body: Column(
-          children: [
-            SizedBox(height: 20,),
-              Container(
-              height: 100,
-              decoration: BoxDecoration(
-                  color: colors.red,
-                  borderRadius: BorderRadius.only(topRight: Radius.circular(10),topLeft: Radius.circular(10))
-              ),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 10),
-                    child: Row(
-                      children: [
-                        InkWell(
-                          onTap: (){
-                            Navigator.pop(context);
-                          },
-                            child: Icon(Icons.arrow_back_ios_new,size: 20,)),
-                        SizedBox(width: 5,),
-                        Text("SELECT A CHECK",style: TextStyle(color: colors.blackTemp,fontSize: 13),),
-
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 10,),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 20,right: 20),
-                    child: Image.asset("assets/images/details.png",height: 50,),
-                  ),
-                  Divider(
-                    color: colors.black54.withOpacity(0.2),
-                    thickness: 1,
-                  ),
-                ],
-              ),
-            ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              SizedBox(height: 20,),
+                Container(
+                height: 100,
+                decoration: BoxDecoration(
+                    color: colors.red,
+                    borderRadius: BorderRadius.only(topRight: Radius.circular(10),topLeft: Radius.circular(10))
+                ),
+                child: Column(
                   children: [
-                  Column(
-                    children: [
-                      Text("Nike"),
-                      SizedBox(height: 8,),
-                      Text("Nike Dunk"),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10),
+                      child: Row(
+                        children: [
+                          InkWell(
+                            onTap: (){
 
-                    ],
-                  ),
-                    Image.asset("assets/images/nikerighrt.png",height: 50,)
+                              Navigator.pop(context);
+                            },
+                              child: Icon(Icons.arrow_back_ios_new,size: 20,)),
+                          SizedBox(width: 5,),
+                          Text("SELECT A CHECK",style: TextStyle(color: colors.blackTemp,fontSize: 13),),
+
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 10,),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20,right: 20),
+                      child: Image.asset("assets/images/details.png",height: 50,),
+                    ),
+                    Divider(
+                      color: colors.black54.withOpacity(0.2),
+                      thickness: 1,
+                    ),
                   ],
                 ),
               ),
-              Text("UPLOAD PRODUCT IMAGE" ,style: TextStyle(color: colors.blackTemp,fontWeight: FontWeight.bold),),
-            Divider(
-              color: colors.black54.withOpacity(0.2),
-              thickness: 1,
-            ),
-               uploadImages(),
-          ],
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                    Column(
+                      children: [
+                        Text("Nike"),
+                        SizedBox(height: 8,),
+                        Text("Nike Dunk"),
+
+                      ],
+                    ),
+                      Image.asset("assets/images/nikerighrt.png",height: 50,)
+                    ],
+                  ),
+                ),
+                Text("UPLOAD PRODUCT IMAGE" ,style: TextStyle(color: colors.blackTemp,fontWeight: FontWeight.bold),),
+              Divider(
+                color: colors.black54.withOpacity(0.2),
+                thickness: 1,
+              ),
+                 uploadImages(),
+
+
+            ],
+          ),
         ),
       ),
     );
@@ -96,6 +103,7 @@ class _ShoosDetailsScreenState extends State<ShoosDetailsScreen> {
   File? ab;
   File? od;
   File? di;
+
 
   Future galery() async {
     final image = await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -227,6 +235,7 @@ class _ShoosDetailsScreenState extends State<ShoosDetailsScreen> {
                                 child: IconButton(
                                     onPressed: () async {
                                       await galery();
+                                      text(XFile(nl!.path.toString()));
                                     },
                                     icon: Icon(
                                         Icons.add_circle_outlined)),
@@ -724,8 +733,39 @@ class _ShoosDetailsScreenState extends State<ShoosDetailsScreen> {
               ),
             ],
           ),
+        ),
+        Card(
+            color: colors.whiteTemp,
+            elevation: 3,
+            child:Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(scannedtext),
+            )
+
         )
       ],
     );
+  }
+
+  text(XFile nl) async{
+    final input= InputImage.fromFilePath( nl.path);
+    final text =GoogleMlKit.vision.textRecognizer();
+    scannedtext = "";
+    RecognizedText recognizedtext = await text.processImage(input);
+    await text.close();
+    for (TextBlock block in recognizedtext.blocks){
+      for( TextLine line in block.lines){
+        scannedtext =scannedtext+line.text +"\n";
+        setState(() {
+          q=scannedtext;
+        });
+        print(q);
+      }
+    }
+
+    print('==========================================');
+
+
+
   }
 }
